@@ -1,286 +1,178 @@
-import { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
-import { 
-  CalendarDays, 
-  FileText, 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
+import {
   MessageSquare,
-  ArrowRight,
-  Clock
+  TrendingUp,
+  Shield,
+  ArrowUpRight,
+  Calendar,
+  Users,
+  Banknote,
+  BarChart3
 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { formatCurrency } from "@/lib/utils"
-
-export const metadata: Metadata = {
-  title: "Dashboard | Admin",
-}
-
-// Mock data - would come from Supabase in production
-const stats = {
-  pendingRequests: 8,
-  offersSent: 12,
-  confirmedBookings: 5,
-  revenueThisMonth: 125000,
-  occupancyRate: 78,
-  unreadMessages: 3,
-}
-
-const recentRequests = [
-  {
-    id: "1",
-    customerName: "James Wilson",
-    company: "Tech Corp",
-    property: "Alpine Luxury Chalet",
-    checkIn: "2026-01-17",
-    checkOut: "2026-01-25",
-    guests: 8,
-    status: "new",
-    createdAt: "2 hours ago",
-  },
-  {
-    id: "2",
-    customerName: "Sarah Chen",
-    company: "Investment Partners",
-    property: "Congress Center Suite",
-    checkIn: "2026-01-18",
-    checkOut: "2026-01-24",
-    guests: 4,
-    status: "under_review",
-    createdAt: "5 hours ago",
-  },
-  {
-    id: "3",
-    customerName: "Michael Brown",
-    company: "Global Finance",
-    property: "Executive Penthouse",
-    checkIn: "2026-01-19",
-    checkOut: "2026-01-23",
-    guests: 6,
-    status: "offer_sent",
-    createdAt: "1 day ago",
-  },
-]
-
-const statusColors: Record<string, "default" | "secondary" | "warning" | "success" | "gold"> = {
-  new: "gold",
-  under_review: "warning",
-  offer_sent: "secondary",
-  accepted: "success",
-  confirmed: "success",
-}
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12 animate-fade-in">
+
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Overview of your booking requests and business metrics
-        </p>
+        <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-[var(--subtle-foreground)] mb-3 block">
+          Command Center
+        </span>
+        <h1 className="text-4xl font-light tracking-tight text-[var(--foreground)]">Dashboard</h1>
+        <p className="text-[var(--subtle-foreground)] text-sm mt-2">WEF 2026 Operations Overview</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pending Requests
-            </CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingRequests}</div>
-            <p className="text-xs text-muted-foreground">Awaiting review</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Offers Sent
-            </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.offersSent}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Confirmed
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.confirmedBookings}</div>
-            <p className="text-xs text-muted-foreground">Bookings</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(stats.revenueThisMonth)}
+      {/* KPI Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Projected Revenue", value: "€1.42M", trend: "+12.5%", icon: Banknote, positive: true },
+          { label: "WEF Occupancy", value: "68%", trend: "Critical Week", icon: Calendar, positive: false, highlight: true },
+          { label: "Active Inquiries", value: "24", trend: "3 New Today", icon: Users, positive: true },
+          { label: "Offer Conversion", value: "42%", trend: "+5% vs 2025", icon: BarChart3, positive: true },
+        ].map((stat, i) => (
+          <div key={i} className="glass-card p-6 group">
+            <div className="flex items-start justify-between mb-6">
+              <div className="p-3 bg-[var(--subtle)] border border-[var(--border)] group-hover:border-gold/30 transition-colors">
+                <stat.icon className="w-5 h-5 text-[var(--subtle-foreground)] group-hover:text-gold transition-colors" />
+              </div>
+              {stat.positive ? (
+                <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                  <ArrowUpRight className="w-3 h-3" /> {stat.trend}
+                </span>
+              ) : (
+                <span className={`text-[10px] font-bold ${stat.highlight ? 'text-amber-500' : 'text-[var(--subtle-foreground)]'}`}>
+                  {stat.trend}
+                </span>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Occupancy
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.occupancyRate}%</div>
-            <p className="text-xs text-muted-foreground">WEF week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Messages
-            </CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.unreadMessages}</div>
-            <p className="text-xs text-muted-foreground">Unread</p>
-          </CardContent>
-        </Card>
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-[var(--subtle-foreground)] block mb-1">
+              {stat.label}
+            </span>
+            <span className={`text-3xl font-light tracking-tight ${stat.highlight ? 'text-amber-500' : 'text-[var(--foreground)]'}`}>
+              {stat.value}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Recent Requests */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Recent Booking Requests</CardTitle>
-            <CardDescription>Latest inquiries from potential guests</CardDescription>
-          </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/bookings">
-              View All
-              <ArrowRight className="ml-2 h-4 w-4" />
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {/* WEF Timeline Visualization */}
+        <div className="lg:col-span-2 glass-card p-6">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h2 className="text-lg font-light text-[var(--foreground)] mb-1">WEF 2026 Timeline</h2>
+              <p className="text-[11px] text-[var(--subtle-foreground)]">Occupancy overview for congress week</p>
+            </div>
+            <Link
+              href="/admin/bookings"
+              className="text-[10px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)] hover:text-[var(--foreground)] transition-all flex items-center gap-2"
+            >
+              Manage <ArrowUpRight className="w-3 h-3" />
             </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentRequests.map((request) => (
+          </div>
+
+          <div className="flex justify-between mb-6">
+            {["Jan 18", "Jan 19", "Jan 20", "Jan 21", "Jan 22", "Jan 23", "Jan 24"].map((date, i) => {
+              const heights = [45, 92, 78, 65, 88, 72, 55]
+              const isWef = i >= 1 && i <= 5
+              return (
+                <div key={i} className="text-center flex-1">
+                  <div className="text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)] mb-3">{date}</div>
+                  <div className="h-32 flex items-end justify-center">
+                    <div
+                      className={`w-6 rounded-t transition-all duration-500 ${
+                        isWef ? 'bg-gold' : 'bg-[var(--foreground)] opacity-15'
+                      }`}
+                      style={{ height: `${heights[i]}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="flex gap-6 pt-4 border-t border-[var(--border)]">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-gold rounded-sm" />
+              <span className="text-[10px] text-[var(--subtle-foreground)]">WEF Period</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-[var(--foreground)] opacity-15 rounded-sm" />
+              <span className="text-[10px] text-[var(--subtle-foreground)]">Pre/Post Event</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Priority Inquiries */}
+        <div className="glass-card p-6">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="text-lg font-light text-[var(--foreground)] mb-1">Active Inquiries</h2>
+              <p className="text-[11px] text-[var(--subtle-foreground)]">Attention required</p>
+            </div>
+            <span className="text-[9px] font-bold tracking-widest bg-gold text-black px-2 py-1">3 NEW</span>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              { name: "Goldman Sachs Delegation", time: "2h ago", status: "Waitlist", type: "WhatsApp" },
+              { name: "CEO of TechGlobal", time: "5h ago", status: "Offer Studio", type: "Email" },
+              { name: "Sovereign Wealth Fund", time: "1d ago", status: "In Review", type: "WhatsApp" },
+            ].map((item, i) => (
               <div
-                key={request.id}
-                className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                key={i}
+                className="p-4 bg-[var(--subtle)] group cursor-pointer hover:bg-[var(--border)] transition-all"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-medium">{request.customerName}</p>
-                      <p className="text-sm text-muted-foreground">{request.company}</p>
-                    </div>
+                <div className="flex justify-between items-start mb-2">
+                  <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--foreground)]">
+                    {item.name}
                   </div>
+                  <span className="text-[9px] font-bold tracking-widest uppercase border border-[var(--border)] px-2 py-0.5 text-[var(--subtle-foreground)] group-hover:border-[var(--foreground)] group-hover:text-[var(--foreground)] transition-all">
+                    {item.status}
+                  </span>
                 </div>
-
-                <div className="flex-1 hidden md:block">
-                  <p className="font-medium">{request.property}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {request.checkIn} → {request.checkOut} · {request.guests} guests
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right hidden sm:block">
-                    <Badge variant={statusColors[request.status]}>
-                      {request.status.replace("_", " ")}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center justify-end">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {request.createdAt}
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/admin/bookings/${request.id}`}>
-                      View
-                    </Link>
-                  </Button>
+                <div className="text-[9px] font-medium text-[var(--subtle-foreground)]">
+                  {item.time} · {item.type}
                 </div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <Link href="/admin/properties/new">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-gold/10 flex items-center justify-center">
-                  <CalendarDays className="h-6 w-6 text-gold" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Add Property</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Add a new property to your portfolio
-                  </p>
-                </div>
-              </div>
-            </CardContent>
+          <Link
+            href="/admin/messages"
+            className="mt-4 block text-center text-[10px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)] hover:text-[var(--foreground)] transition-all py-3 border border-[var(--border)] hover:border-[var(--foreground)] hover:border-opacity-30"
+          >
+            View All Inquiries
           </Link>
-        </Card>
+        </div>
+      </div>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <Link href="/admin/offers/new">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-gold/10 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-gold" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Create Offer</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Generate a new PDF offer
-                  </p>
-                </div>
+      {/* Operation Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {[
+          { icon: Shield, label: "Security Protocols", status: "Active & Synced", statusColor: "text-emerald-500" },
+          { icon: TrendingUp, label: "Market Demand", status: "High Velocity", statusColor: "text-gold" },
+          { icon: MessageSquare, label: "Support Status", status: "System Normal", statusColor: "text-emerald-500" },
+        ].map((item, i) => (
+          <div key={i} className="glass-card p-5 flex items-center gap-5">
+            <div className="p-3 bg-[var(--subtle)] border border-[var(--border)]">
+              <item.icon className="w-4 h-4 text-[var(--subtle-foreground)]" />
+            </div>
+            <div>
+              <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-[var(--subtle-foreground)] mb-0.5">
+                {item.label}
               </div>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <Link href="/admin/messages">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-gold/10 flex items-center justify-center">
-                  <MessageSquare className="h-6 w-6 text-gold" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">View Messages</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Check your inbox and respond
-                  </p>
-                </div>
+              <div className={`text-[11px] font-bold tracking-widest uppercase ${item.statusColor}`}>
+                {item.status}
               </div>
-            </CardContent>
-          </Link>
-        </Card>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

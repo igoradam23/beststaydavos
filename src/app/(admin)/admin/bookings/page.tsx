@@ -1,297 +1,386 @@
-import { Metadata } from "next"
-import Link from "next/link"
-import { Search, Filter, Clock, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+"use client"
 
-export const metadata: Metadata = {
-  title: "Bookings | Admin",
+import { Search, Filter, Mail, MessageSquare, Globe, Phone, FileText, Send, CheckCircle2, XCircle, Clock, ChevronDown, MoreHorizontal, Shield, Car, Sparkles, Users, Calendar, Home, ArrowUpRight } from "lucide-react"
+import Image from "next/image"
+import { useState } from "react"
+
+type RequestStatus = "new" | "in_progress" | "offer_sent" | "confirmed" | "declined"
+type Channel = "whatsapp" | "email" | "form" | "phone"
+
+interface Request {
+  id: string
+  guest: string
+  company: string
+  channel: Channel
+  dates: { start: string; end: string }
+  property: { name: string; available: boolean; price: string; img: string }
+  guests: number
+  services: string[]
+  status: RequestStatus
+  created: string
+  priority: "high" | "medium" | "low"
 }
 
-// Mock data
-const bookingRequests = [
+const requests: Request[] = [
   {
-    id: "1",
-    customerName: "James Wilson",
-    email: "james@techcorp.com",
-    company: "Tech Corp",
-    property: "Alpine Luxury Chalet",
-    propertySlug: "alpine-luxury-chalet",
-    checkIn: "2026-01-17",
-    checkOut: "2026-01-25",
-    guests: 8,
-    status: "new",
-    source: "form",
-    createdAt: "2026-01-15T10:30:00Z",
-  },
-  {
-    id: "2",
-    customerName: "Sarah Chen",
-    email: "sarah@investment.com",
-    company: "Investment Partners",
-    property: "Congress Center Suite",
-    propertySlug: "congress-center-suite",
-    checkIn: "2026-01-18",
-    checkOut: "2026-01-24",
-    guests: 4,
-    status: "under_review",
-    source: "email",
-    createdAt: "2026-01-14T15:00:00Z",
-  },
-  {
-    id: "3",
-    customerName: "Michael Brown",
-    email: "michael@globalfin.com",
-    company: "Global Finance",
-    property: "Executive Penthouse",
-    propertySlug: "executive-penthouse",
-    checkIn: "2026-01-19",
-    checkOut: "2026-01-23",
+    id: "REQ-001",
+    guest: "CEO of TechGlobal",
+    company: "TechGlobal Inc.",
+    channel: "whatsapp",
+    dates: { start: "Jan 18", end: "Jan 25" },
+    property: { name: "The Parsenn Penthouse", available: true, price: "€25,000", img: "https://images.unsplash.com/photo-1600607687940-467f4b6020c2?q=80&w=200" },
     guests: 6,
+    services: ["VIP Security", "Elite Transport"],
+    status: "in_progress",
+    created: "2h ago",
+    priority: "high"
+  },
+  {
+    id: "REQ-002",
+    guest: "Goldman Sachs Delegation",
+    company: "Goldman Sachs",
+    channel: "email",
+    dates: { start: "Jan 19", end: "Jan 24" },
+    property: { name: "Chalet Jakobshorn", available: false, price: "€45,000", img: "https://images.unsplash.com/photo-1542718610-a1d656d1884c?q=80&w=200" },
+    guests: 12,
+    services: ["VIP Security", "Private Chef", "Elite Transport"],
+    status: "new",
+    created: "5h ago",
+    priority: "high"
+  },
+  {
+    id: "REQ-003",
+    guest: "James Wilson",
+    company: "Tech Corp",
+    channel: "email",
+    dates: { start: "Jan 20", end: "Jan 23" },
+    property: { name: "The Clavadel Sanctuary", available: true, price: "€18,000", img: "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=200" },
+    guests: 4,
+    services: ["Elite Transport"],
     status: "offer_sent",
-    source: "whatsapp",
-    createdAt: "2026-01-13T09:00:00Z",
+    created: "1d ago",
+    priority: "medium"
   },
   {
-    id: "4",
-    customerName: "Elena Rodriguez",
-    email: "elena@consulting.ch",
-    company: "Swiss Consulting AG",
-    property: "Mountain View Residence",
-    propertySlug: "mountain-view-residence",
-    checkIn: "2026-01-17",
-    checkOut: "2026-01-24",
-    guests: 5,
-    status: "accepted",
-    source: "form",
-    createdAt: "2026-01-10T14:00:00Z",
-  },
-  {
-    id: "5",
-    customerName: "David Kim",
-    email: "david@ventures.kr",
-    company: "Korean Ventures",
-    property: "Alpine Luxury Chalet",
-    propertySlug: "alpine-luxury-chalet",
-    checkIn: "2026-01-18",
-    checkOut: "2026-01-23",
-    guests: 10,
+    id: "REQ-004",
+    guest: "Sovereign Wealth Director",
+    company: "GIC Funds",
+    channel: "whatsapp",
+    dates: { start: "Jan 18", end: "Jan 26" },
+    property: { name: "Belvedere Executive Suite", available: true, price: "€12,000", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=200" },
+    guests: 2,
+    services: ["VIP Security"],
     status: "confirmed",
-    source: "email",
-    createdAt: "2026-01-08T11:00:00Z",
+    created: "2d ago",
+    priority: "high"
+  },
+  {
+    id: "REQ-005",
+    guest: "Maria Santos",
+    company: "Private Client",
+    channel: "form",
+    dates: { start: "Jan 19", end: "Jan 22" },
+    property: { name: "Alpine Grand Residence", available: true, price: "€35,000", img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=200" },
+    guests: 8,
+    services: ["Private Chef"],
+    status: "new",
+    created: "3d ago",
+    priority: "low"
+  },
+  {
+    id: "REQ-006",
+    guest: "David Chen",
+    company: "Sequoia Capital",
+    channel: "phone",
+    dates: { start: "Jan 21", end: "Jan 25" },
+    property: { name: "The Parsenn Penthouse", available: true, price: "€25,000", img: "https://images.unsplash.com/photo-1600607687940-467f4b6020c2?q=80&w=200" },
+    guests: 4,
+    services: ["VIP Security", "Elite Transport"],
+    status: "declined",
+    created: "4d ago",
+    priority: "medium"
   },
 ]
 
-const statusColors: Record<string, "default" | "secondary" | "warning" | "success" | "gold" | "destructive"> = {
-  new: "gold",
-  under_review: "warning",
-  offer_sent: "secondary",
-  accepted: "success",
-  negotiation: "warning",
-  confirmed: "success",
-  completed: "default",
-  expired: "destructive",
-  cancelled: "destructive",
+function ChannelIcon({ channel, className = "" }: { channel: Channel; className?: string }) {
+  const icons = {
+    whatsapp: <MessageSquare className={`text-emerald-500 ${className}`} />,
+    email: <Mail className={`text-blue-500 ${className}`} />,
+    form: <Globe className={`text-purple-500 ${className}`} />,
+    phone: <Phone className={`text-amber-500 ${className}`} />,
+  }
+  return icons[channel]
 }
 
-const statusLabels: Record<string, string> = {
-  new: "New",
-  under_review: "Under Review",
-  offer_sent: "Offer Sent",
-  accepted: "Accepted",
-  negotiation: "Negotiation",
-  confirmed: "Confirmed",
-  completed: "Completed",
-  expired: "Expired",
-  cancelled: "Cancelled",
+function ChannelBadge({ channel }: { channel: Channel }) {
+  const colors = {
+    whatsapp: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    email: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    form: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    phone: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  }
+  const labels = { whatsapp: "WhatsApp", email: "Email", form: "Web Form", phone: "Phone" }
+  return (
+    <span className={`text-[8px] font-bold tracking-widest uppercase px-2 py-0.5 border inline-flex items-center gap-1.5 ${colors[channel]}`}>
+      <ChannelIcon channel={channel} className="w-2.5 h-2.5" />
+      {labels[channel]}
+    </span>
+  )
 }
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+function StatusBadge({ status }: { status: RequestStatus }) {
+  const config = {
+    new: { label: "New", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+    in_progress: { label: "In Progress", color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+    offer_sent: { label: "Offer Sent", color: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
+    confirmed: { label: "Confirmed", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
+    declined: { label: "Declined", color: "bg-rose-500/10 text-rose-500 border-rose-500/20" },
+  }
+  return (
+    <span className={`text-[8px] font-bold tracking-widest uppercase px-2 py-0.5 border ${config[status].color}`}>
+      {config[status].label}
+    </span>
+  )
+}
+
+function ServiceIcon({ service }: { service: string }) {
+  if (service.includes("Security")) return <Shield className="w-3 h-3" />
+  if (service.includes("Transport")) return <Car className="w-3 h-3" />
+  if (service.includes("Chef")) return <Sparkles className="w-3 h-3" />
+  return null
+}
+
+function AvailabilityBadge({ available }: { available: boolean }) {
+  return available ? (
+    <span className="text-[8px] font-bold tracking-widest uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20 inline-flex items-center gap-1">
+      <CheckCircle2 className="w-2.5 h-2.5" /> Available
+    </span>
+  ) : (
+    <span className="text-[8px] font-bold tracking-widest uppercase text-rose-500 bg-rose-500/10 px-2 py-0.5 border border-rose-500/20 inline-flex items-center gap-1">
+      <XCircle className="w-2.5 h-2.5" /> Booked
+    </span>
+  )
+}
+
+export default function RequestsPage() {
+  const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">("all")
+  const [channelFilter, setChannelFilter] = useState<Channel | "all">("all")
+
+  const filteredRequests = requests.filter(r => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false
+    if (channelFilter !== "all" && r.channel !== channelFilter) return false
+    return true
   })
-}
 
-function getTimeAgo(dateString: string) {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 0) return "Today"
-  if (diffDays === 1) return "Yesterday"
-  if (diffDays < 7) return `${diffDays} days ago`
-  return formatDate(dateString)
-}
-
-export default function BookingsPage() {
-  const statusCounts = {
-    all: bookingRequests.length,
-    new: bookingRequests.filter((b) => b.status === "new").length,
-    pending: bookingRequests.filter((b) => ["under_review", "offer_sent", "negotiation"].includes(b.status)).length,
-    confirmed: bookingRequests.filter((b) => ["accepted", "confirmed"].includes(b.status)).length,
+  const stats = {
+    total: requests.length,
+    new: requests.filter(r => r.status === "new").length,
+    inProgress: requests.filter(r => r.status === "in_progress").length,
+    confirmed: requests.filter(r => r.status === "confirmed").length,
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Booking Requests</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage incoming booking requests and create offers
-        </p>
+      <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
+        <div>
+          <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-[var(--subtle-foreground)] mb-3 block">Booking Management</span>
+          <h1 className="text-4xl font-light tracking-tight text-[var(--foreground)]">Requests</h1>
+          <p className="text-[var(--subtle-foreground)] text-sm mt-2">Manage incoming booking requests for WEF 2026</p>
+        </div>
+
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="relative group w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--subtle-foreground)] group-focus-within:text-[var(--foreground)] transition-colors" />
+            <input
+              type="text"
+              placeholder="Search requests..."
+              className="w-full bg-[var(--subtle)] border border-[var(--border)] py-3 pl-12 pr-4 text-[10px] font-bold tracking-widest uppercase placeholder:text-[var(--subtle-foreground)] focus:outline-none focus:border-[var(--foreground)] focus:border-opacity-20 transition-all text-[var(--foreground)]"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as RequestStatus | "all")}
+            className="bg-[var(--subtle)] border border-[var(--border)] py-3 px-4 text-[10px] font-bold tracking-widest uppercase text-[var(--foreground)] focus:outline-none focus:border-[var(--foreground)] focus:border-opacity-20"
+          >
+            <option value="all">All Status</option>
+            <option value="new">New</option>
+            <option value="in_progress">In Progress</option>
+            <option value="offer_sent">Offer Sent</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="declined">Declined</option>
+          </select>
+          <select
+            value={channelFilter}
+            onChange={(e) => setChannelFilter(e.target.value as Channel | "all")}
+            className="bg-[var(--subtle)] border border-[var(--border)] py-3 px-4 text-[10px] font-bold tracking-widest uppercase text-[var(--foreground)] focus:outline-none focus:border-[var(--foreground)] focus:border-opacity-20"
+          >
+            <option value="all">All Channels</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="email">Email</option>
+            <option value="form">Web Form</option>
+            <option value="phone">Phone</option>
+          </select>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gold">{statusCounts.new}</div>
-            <p className="text-sm text-muted-foreground">New Requests</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{statusCounts.pending}</div>
-            <p className="text-sm text-muted-foreground">Pending</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">{statusCounts.confirmed}</div>
-            <p className="text-sm text-muted-foreground">Confirmed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{statusCounts.all}</div>
-            <p className="text-sm text-muted-foreground">Total</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Total Requests", value: stats.total, icon: Home },
+          { label: "New Inquiries", value: stats.new, icon: Clock, highlight: stats.new > 0 },
+          { label: "In Progress", value: stats.inProgress, icon: FileText },
+          { label: "Confirmed", value: stats.confirmed, icon: CheckCircle2 },
+        ].map((stat, i) => (
+          <div key={i} className="glass-card p-5 flex items-center gap-4">
+            <div className={`p-3 border ${stat.highlight ? "bg-blue-500/10 border-blue-500/20" : "bg-[var(--subtle)] border-[var(--border)]"}`}>
+              <stat.icon className={`w-4 h-4 ${stat.highlight ? "text-blue-500" : "text-[var(--subtle-foreground)]"}`} />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)] block">{stat.label}</span>
+              <span className={`text-xl font-light ${stat.highlight ? "text-blue-500" : "text-[var(--foreground)]"}`}>{stat.value}</span>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by name, email, or company..." className="pl-9" />
-        </div>
-        <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" />
-          Filters
-        </Button>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
-          <TabsTrigger value="new">New ({statusCounts.new})</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({statusCounts.pending})</TabsTrigger>
-          <TabsTrigger value="confirmed">Confirmed ({statusCounts.confirmed})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="mt-6">
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Property</TableHead>
-                  <TableHead>Dates</TableHead>
-                  <TableHead>Guests</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Received</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookingRequests.map((request) => (
-                  <TableRow key={request.id}>
-                    <TableCell>
+      {/* Requests Table */}
+      <div className="glass-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1100px]">
+            <thead>
+              <tr className="border-b border-[var(--border)] bg-[var(--subtle)]">
+                <th className="p-4 text-left text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Guest / Company</th>
+                <th className="p-4 text-left text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Channel</th>
+                <th className="p-4 text-left text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Dates</th>
+                <th className="p-4 text-left text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Property</th>
+                <th className="p-4 text-left text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Services</th>
+                <th className="p-4 text-left text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Status</th>
+                <th className="p-4 text-right text-[9px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRequests.map((request) => (
+                <tr key={request.id} className="border-b border-[var(--border)] hover:bg-[var(--subtle)] transition-colors group">
+                  {/* Guest */}
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        request.priority === "high" ? "bg-rose-500" :
+                        request.priority === "medium" ? "bg-amber-500" : "bg-[var(--subtle-foreground)]"
+                      }`} />
                       <div>
-                        <p className="font-medium">{request.customerName}</p>
-                        <p className="text-sm text-muted-foreground">{request.company}</p>
+                        <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--foreground)]">{request.guest}</div>
+                        <div className="text-[9px] text-[var(--subtle-foreground)]">{request.company}</div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link 
-                        href={`/accommodation/${request.propertySlug}`}
-                        className="hover:text-gold transition-colors"
-                        target="_blank"
+                    </div>
+                  </td>
+
+                  {/* Channel */}
+                  <td className="p-4">
+                    <ChannelBadge channel={request.channel} />
+                  </td>
+
+                  {/* Dates */}
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-3 h-3 text-[var(--subtle-foreground)]" />
+                      <span className="text-[10px] text-[var(--foreground)]">{request.dates.start} – {request.dates.end}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Users className="w-3 h-3 text-[var(--subtle-foreground)]" />
+                      <span className="text-[9px] text-[var(--subtle-foreground)]">{request.guests} guests</span>
+                    </div>
+                  </td>
+
+                  {/* Property */}
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-12 h-10 bg-[var(--subtle)] overflow-hidden flex-shrink-0">
+                        <Image src={request.property.img} alt={request.property.name} fill className="object-cover" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold tracking-wider uppercase text-[var(--foreground)]">{request.property.name}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[9px] text-[var(--subtle-foreground)]">{request.property.price}/wk</span>
+                          <AvailabilityBadge available={request.property.available} />
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Services */}
+                  <td className="p-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {request.services.map((service, i) => (
+                        <span key={i} className="text-[8px] font-bold tracking-widest uppercase bg-[var(--subtle)] border border-[var(--border)] px-2 py-1 text-[var(--subtle-foreground)] inline-flex items-center gap-1">
+                          <ServiceIcon service={service} />
+                          {service}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+
+                  {/* Status */}
+                  <td className="p-4">
+                    <StatusBadge status={request.status} />
+                    <div className="text-[8px] text-[var(--subtle-foreground)] mt-1">{request.created}</div>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="p-4">
+                    <div className="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
+                      {request.status !== "confirmed" && request.status !== "declined" && (
+                        <>
+                          <button
+                            className="p-2 text-[var(--subtle-foreground)] hover:text-gold hover:bg-gold/10 transition-all"
+                            title="Generate Offer"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                          <button
+                            className={`p-2 transition-all ${
+                              request.channel === "whatsapp" ? "text-emerald-500 hover:bg-emerald-500/10" :
+                              request.channel === "email" ? "text-blue-500 hover:bg-blue-500/10" :
+                              request.channel === "phone" ? "text-amber-500 hover:bg-amber-500/10" :
+                              "text-purple-500 hover:bg-purple-500/10"
+                            }`}
+                            title={`Send via ${request.channel}`}
+                          >
+                            <ChannelIcon channel={request.channel} className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="p-2 text-[var(--subtle-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--subtle)] transition-all"
+                        title="More options"
                       >
-                        {request.property}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <p>{formatDate(request.checkIn)}</p>
-                        <p className="text-muted-foreground">to {formatDate(request.checkOut)}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{request.guests}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusColors[request.status]}>
-                        {statusLabels[request.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {getTimeAgo(request.createdAt)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/bookings/${request.id}`}>
-                          View
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <TabsContent value="new" className="mt-6">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">
-                Showing {statusCounts.new} new requests
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {filteredRequests.length === 0 && (
+          <div className="p-12 text-center">
+            <p className="text-[var(--subtle-foreground)] text-sm">No requests match your filters</p>
+          </div>
+        )}
+      </div>
 
-        <TabsContent value="pending" className="mt-6">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">
-                Showing {statusCounts.pending} pending requests
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="confirmed" className="mt-6">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">
-                Showing {statusCounts.confirmed} confirmed requests
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Quick Actions Footer */}
+      <div className="flex justify-between items-center">
+        <p className="text-[10px] text-[var(--subtle-foreground)]">
+          Showing {filteredRequests.length} of {requests.length} requests
+        </p>
+        <button className="text-[10px] font-bold tracking-widest uppercase text-[var(--subtle-foreground)] hover:text-[var(--foreground)] transition-all border border-[var(--border)] hover:border-[var(--foreground)] hover:border-opacity-30 px-6 py-3 flex items-center gap-2">
+          Export Requests <ArrowUpRight className="w-3 h-3" />
+        </button>
+      </div>
     </div>
   )
 }
